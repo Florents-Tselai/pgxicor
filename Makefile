@@ -4,7 +4,7 @@ EXTVERSION = 0.1.0
 PG_CONFIG ?= pg_config
 
 MODULE_big = $(EXTENSION)
-OBJS = src/mine.o src/vasco.o src/xicor.o
+OBJS = src/pgxicor.o
 
 DATA = sql/xicor--0.1.0.sql
 
