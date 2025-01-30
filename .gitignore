@@ -1,0 +1,14 @@
+.deps/
+.idea/
+*.o
+*.so
+*.dylib
+build/
+dist/
+*.egg-info/
+archive/
+
+/*.png
+/pgdata/
+/results/
+regression.*
