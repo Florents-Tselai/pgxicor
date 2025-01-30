@@ -1,6 +1,6 @@
 {
-    "name": "vasco",
-    "abstract": "vasco: Maximal Information Coefficient (MIC) Extension for Postgres\n",
+    "name": "pgxicor",
+    "abstract": "XI (ξ) Correlation Coefficient in Postgres\n",
     "version": "0.1.0",
     "maintainer": [
         "Florents Tselai <florents.tselai@gmail.com>"
@@ -16,20 +16,20 @@
         }
     },
     "provides": {
-        "vasco": {
-            "file": "sql/vasco--0.1.0.sql",
+        "pgxicor": {
+            "file": "sql/pgxicor--0.1.0.sql",
             "docfile": "README.md",
             "version": "0.1.0",
-            "abstract": "vasco: Maximal Information Coefficient (MIC) Extension for Postgres"
+            "abstract": "vXI (ξ) Correlation Coefficient"
         }
     },
     "resources": {
         "bugtracker": {
-            "web": "https://github.com/Florents-Tselai/vasco/issues"
+            "web": "https://github.com/Florents-Tselai/pgxicor/issues"
         },
         "repository": {
-            "url": "git://github.com/Florents-Tselai/vasco.git" ,
-            "web": "https://github.com/Florents-Tselai/vasco",
+            "url": "git://github.com/Florents-Tselai/pgxicor.git" ,
+            "web": "https://github.com/Florents-Tselai/pgxicor",
             "type": "git"
         }
     },
