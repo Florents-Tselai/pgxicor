@@ -1,41 +1,42 @@
 #include "pgxicor.h"
+#include "postgres.h"
+#include "fmgr.h"
+#include "utils/array.h"
+#include "utils/guc.h"
+#include "funcapi.h"
 
 PG_MODULE_MAGIC;
 
-// static int guc_seed = 42;
-// static bool guc_ties = 1;
+static int guc_seed;
+static bool guc_ties;
 
-// /* Startup */
-// void _PG_init(void) {
-//
-//     DefineCustomIntVariable("xicor.seed",
-//                              "",
-//                              NULL,
-//                              &guc_seed,
-//                              42,
-//                              0,
-//                              INFINITY,
-//                              PGC_SUSET,
-//                              0,
-//                              NULL,
-//                              NULL,
-//                              NULL
-//     );
-//
-//
-//     DefineCustomBoolVariable("vasco.mine_tic_norm",
-//                              "MINE normalize for TIC",
-//                              NULL,
-//                              &guc_ties,
-//                              0,
-//                              PGC_SUSET,
-//                              0,
-//                              NULL,
-//                              NULL,
-//                              NULL);
-//
-//
-// }
+/* Startup */
+void _PG_init(void)
+{
+    DefineCustomIntVariable("xicor.seed",
+                            "Random seed for xicor computations",
+                            NULL,
+                            &guc_seed,
+                            42, /* Default */
+                            0, /* Min */
+                            INT_MAX, /* Max */
+                            PGC_SUSET,
+                            0,
+                            NULL,
+                            NULL,
+                            NULL);
+
+    DefineCustomBoolVariable("xicor.ties",
+                             "Enable tie handling in xicor computations",
+                             NULL,
+                             &guc_ties,
+                             false, /* Default value */
+                             PGC_SUSET,
+                             0,
+                             NULL,
+                             NULL,
+                             NULL);
+}
 
 void quicksort(double* a, int* idx, int l, int u)
 {
@@ -283,7 +284,7 @@ xicor_final(PG_FUNCTION_ARGS)
     Datum y = GetAttributeByName(problem, "y", &y_isnull);
 
     xicor_problem prob;
-    xicor_parameter param = {.seed = 42, .ties = 1};
+    xicor_parameter param = {.seed = guc_seed, .ties = guc_ties};
     build_xicor_problem(DatumGetArrayTypeP(x), x_isnull, DatumGetArrayTypeP(y), y_isnull, &prob);
 
     xicor_score* score = xicor_compute_score(&prob, &param);
