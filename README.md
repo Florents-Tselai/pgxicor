@@ -2,7 +2,7 @@
 
 [![build](https://github.com/Florents-Tselai/pgxicor/actions/workflows/build.yml/badge.svg)](https://github.com/Florents-Tselai/pgxicor/actions/workflows/build.yml)
 ![GitHub Repo stars](https://img.shields.io/github/stars/Florents-Tselai/pgxicor)
-<a href="https://hub.docker.com/repository/docker/florents/pgxicor"><img alt="Docker Pulls" src="https://img.shields.io/docker/pulls/florents/pgxicor"></a>
+![Docker Pulls](https://img.shields.io/docker/pulls/florents/pgxicor)
 
 **pgxicor** is a Postgres extension that exposes a `SELECT xicor(X, Y)` aggregate function.
 XI can detect functional relationships between X and Y.
