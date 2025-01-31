@@ -26,6 +26,14 @@ VALUES
 -- Query to calculate the Xi correlation using the aggregate function
 SELECT xicor(x, y) FROM xicor_test;
 ```
+
+If your data contains ties and you want 100% reproducible results, you should also set the following.
+
+```sql
+SET xicor.ties = true;
+SET xicor.seed = 42;
+```
+
 ## Installation
 
 ```
