@@ -76,3 +76,11 @@ Through another terminal, connect to the running server (container).
 ```sh
 PGPASSWORD=pass psql -h localhost -p 5432 -U postgres
 ```
+
+### PGXN
+
+Install from the [PostgreSQL Extension Network](https://pgxn.org/dist/pgxicor) with:
+
+```sh
+pgxn install pgxicor
+```
