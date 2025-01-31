@@ -52,7 +52,7 @@ make install # may need sudo
 After the installation, in a session:
 
 ```tsql
-CREATE EXTENSION pgxicor;
+CREATE EXTENSION xicor;
 ```
 
 ### Docker
