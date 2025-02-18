@@ -36,8 +36,8 @@ SET xicor.seed = 42;
 
 > [!TIP]
 > If you're interested in this, also check out
-> [vasco](github.com/Florents-Tselai/vasco); another similar extension based on the Maximal Information Coefficient (MIC).
-> A standalone C implementation of ξ is also available [libxicor](github.com/Florents-Tselai/libxicor).
+> [vasco](https://github.com/Florents-Tselai/vasco); another similar extension based on the Maximal Information Coefficient (MIC).
+> A standalone C implementation of ξ is also available [libxicor](https://github.com/Florents-Tselai/libxicor).
 
 ## Installation
 
