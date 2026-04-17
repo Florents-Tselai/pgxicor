@@ -1,4 +1,4 @@
-SET extra_float_digits = 0;
+γιτ SET extra_float_digits = 0;
 
 -- Create a table to store x and y values
 CREATE TABLE xicor_test (

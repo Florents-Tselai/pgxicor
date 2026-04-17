@@ -1,7 +1,7 @@
 {
     "name": "pgxicor",
     "abstract": "XI (ξ) Correlation Coefficient in Postgres\n",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "maintainer": [
         "Florents Tselai <florents.tselai@gmail.com>"
     ],
@@ -17,10 +17,10 @@
     },
     "provides": {
         "pgxicor": {
-            "file": "sql/pgxicor--0.1.0.sql",
+            "file": "sql/xicor--0.1.1.sql",
             "docfile": "README.md",
-            "version": "0.1.0",
-            "abstract": "vXI (ξ) Correlation Coefficient"
+            "version": "0.1.1",
+            "abstract": "XI (ξ) Correlation Coefficient"
         }
     },
     "resources": {
@@ -28,14 +28,14 @@
             "web": "https://github.com/Florents-Tselai/pgxicor/issues"
         },
         "repository": {
-            "url": "git://github.com/Florents-Tselai/pgxicor.git" ,
+            "url": "git://github.com/Florents-Tselai/pgxicor.git",
             "web": "https://github.com/Florents-Tselai/pgxicor",
             "type": "git"
         }
     },
     "meta-spec": {
-      "version": "1.0.0",
-      "url": "http://pgxn.org/meta/spec.txt"
+        "version": "1.0.0",
+        "url": "http://pgxn.org/meta/spec.txt"
     },
     "tags": [
         "statistics",

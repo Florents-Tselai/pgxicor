@@ -17,8 +17,8 @@ void _PG_init(void)
                             "Random seed for xicor computations",
                             NULL,
                             &guc_seed,
-                            42, /* Default */
-                            0, /* Min */
+                            42,      /* Default */
+                            0,       /* Min */
                             INT_MAX, /* Max */
                             PGC_SUSET,
                             0,
@@ -38,7 +38,7 @@ void _PG_init(void)
                              NULL);
 }
 
-void quicksort(double* a, int* idx, int l, int u)
+void quicksort(double *a, int *idx, int l, int u)
 {
     int i, m, idx_temp;
     double a_temp;
@@ -75,26 +75,24 @@ void quicksort(double* a, int* idx, int l, int u)
     quicksort(a, idx, m + 1, u);
 }
 
-int* argsort(double* a, int n)
+int *argsort(double *a, int n)
 {
-    double* a_cpy;
+    double *a_cpy;
     int i, *idx;
 
-    a_cpy = (double*)malloc(n * sizeof(double));
+    a_cpy = (double *) malloc(n * sizeof(double));
     if (a_cpy == NULL)
         return NULL;
 
-    idx = (int*)malloc(n * sizeof(int));
+    idx = (int *) malloc(n * sizeof(int));
     if (idx == NULL)
     {
         free(a_cpy);
         return NULL;
     }
 
-    /* fill a_cpy */
     memcpy(a_cpy, a, n * sizeof(double));
 
-    /* fill idx */
     for (i = 0; i < n; i++)
         idx[i] = i;
 
@@ -105,22 +103,21 @@ int* argsort(double* a, int n)
 }
 
 
-static void build_xicor_problem(ArrayType* arg0,
+static void build_xicor_problem(ArrayType *arg0,
                                 bool null_arg0,
-                                ArrayType* arg1,
+                                ArrayType *arg1,
                                 bool null_arg1,
-                                xicor_problem* ret_prob)
+                                xicor_problem *ret_prob)
 {
     ArrayIterator iter0, iter1;
     int i;
     Datum x_value, y_value;
 
     ret_prob->n = ArrayGetNItems(ARR_NDIM(arg0), ARR_DIMS(arg0));
-    //TODO: check that both arrays are of the same size
-    ret_prob->x = (double*)palloc(ret_prob->n * sizeof(double));
-    ret_prob->y = (double*)palloc(ret_prob->n * sizeof(double));
+    /* TODO: check that both arrays are of the same size */
+    ret_prob->x = (double *) palloc(ret_prob->n * sizeof(double));
+    ret_prob->y = (double *) palloc(ret_prob->n * sizeof(double));
 
-    /* populate prob.x and prob.y arrays */
     iter0 = array_create_iterator(arg0, 0, NULL);
     i = 0;
     while (array_iterate(iter0, &x_value, &null_arg0))
@@ -141,24 +138,30 @@ static void build_xicor_problem(ArrayType* arg0,
 }
 
 
-xicor_score* xicor_compute_score(xicor_problem* prob, xicor_parameter* param)
+xicor_score *xicor_compute_score(xicor_problem *prob, xicor_parameter *param)
 {
+    int n, ties, i, j;
+    double *x, *y;
+    int *order, *l, *r;
+    double sum_l, sum_r_diff, score;
+    xicor_score *result;
+
     if (!prob || !prob->x || !prob->y || prob->n <= 0)
     {
         fprintf(stderr, "Invalid input to xicor_compute_score\n");
         return NULL;
     }
 
-    int n = prob->n;
-    double* x = prob->x;
-    double* y = prob->y;
-    int ties = param->ties;
+    n = prob->n;
+    x = prob->x;
+    y = prob->y;
+    ties = param->ties;
 
     /* Initialize the random seed */
     srand(param->seed);
 
     /* Get the sorted order of x using argsort */
-    int* order = argsort(x, n);
+    order = argsort(x, n);
     if (!order)
     {
         fprintf(stderr, "Memory allocation failed for order array\n");
@@ -166,8 +169,8 @@ xicor_score* xicor_compute_score(xicor_problem* prob, xicor_parameter* param)
     }
 
     /* Compute the rank arrays l and r */
-    int* l = (int*)malloc(n * sizeof(int));
-    int* r = (int*)malloc(n * sizeof(int));
+    l = (int *) malloc(n * sizeof(int));
+    r = (int *) malloc(n * sizeof(int));
     if (!l || !r)
     {
         fprintf(stderr, "Memory allocation failed for rank arrays\n");
@@ -175,15 +178,13 @@ xicor_score* xicor_compute_score(xicor_problem* prob, xicor_parameter* param)
         return NULL;
     }
 
-    for (int i = 0; i < n; i++)
+    for (i = 0; i < n; i++)
     {
         l[i] = 0;
-        for (int j = 0; j < n; j++)
+        for (j = 0; j < n; j++)
         {
             if (y[order[j]] >= y[order[i]])
-            {
                 l[i]++;
-            }
         }
         r[i] = l[i];
     }
@@ -191,16 +192,20 @@ xicor_score* xicor_compute_score(xicor_problem* prob, xicor_parameter* param)
     /* Handle ties if required */
     if (ties)
     {
-        for (int i = 0; i < n; i++)
+        for (i = 0; i < n; i++)
         {
-            int tie_count = 0;
-            for (int j = 0; j < n; j++)
+            int tie_count, k;
+            int *tie_indices;
+
+            tie_count = 0;
+            for (j = 0; j < n; j++)
             {
-                if (r[j] == r[i]) tie_count++;
+                if (r[j] == r[i])
+                    tie_count++;
             }
             if (tie_count > 1)
             {
-                int* tie_indices = (int*)malloc(tie_count * sizeof(int));
+                tie_indices = (int *) malloc(tie_count * sizeof(int));
                 if (!tie_indices)
                 {
                     fprintf(stderr, "Memory allocation failed for tie indices\n");
@@ -210,19 +215,15 @@ xicor_score* xicor_compute_score(xicor_problem* prob, xicor_parameter* param)
                     return NULL;
                 }
 
-                int k = 0;
-                for (int j = 0; j < n; j++)
+                k = 0;
+                for (j = 0; j < n; j++)
                 {
                     if (r[j] == r[i])
-                    {
                         tie_indices[k++] = j;
-                    }
                 }
 
-                for (int k = 0; k < tie_count; k++)
-                {
+                for (k = 0; k < tie_count; k++)
                     r[tie_indices[k]] = r[tie_indices[k]] - k;
-                }
 
                 free(tie_indices);
             }
@@ -230,28 +231,20 @@ xicor_score* xicor_compute_score(xicor_problem* prob, xicor_parameter* param)
     }
 
     /* Compute the Xi correlation score */
-    double sum_l = 0.0, sum_r_diff = 0.0;
-    for (int i = 0; i < n; i++)
-    {
+    sum_l = 0.0;
+    sum_r_diff = 0.0;
+    for (i = 0; i < n; i++)
         sum_l += l[i] * (n - l[i]);
-    }
-    for (int i = 1; i < n; i++)
-    {
+    for (i = 1; i < n; i++)
         sum_r_diff += abs(r[i] - r[i - 1]);
-    }
 
-    double score;
     if (ties)
-    {
         score = 1.0 - (n * sum_r_diff) / (2.0 * sum_l);
-    }
     else
-    {
-        score = 1.0 - (3.0 * sum_r_diff) / ((double)(n * n - 1));
-    }
+        score = 1.0 - (3.0 * sum_r_diff) / ((double) (n * n - 1));
 
     /* Create the result structure */
-    xicor_score* result = (xicor_score*)malloc(sizeof(xicor_score));
+    result = (xicor_score *) malloc(sizeof(xicor_score));
     if (!result)
     {
         fprintf(stderr, "Memory allocation failed for result\n");
@@ -262,7 +255,6 @@ xicor_score* xicor_compute_score(xicor_problem* prob, xicor_parameter* param)
     }
     result->score = score;
 
-    /* Free allocated memory */
     free(order);
     free(l);
     free(r);
@@ -271,24 +263,105 @@ xicor_score* xicor_compute_score(xicor_problem* prob, xicor_parameter* param)
 }
 
 
+PG_FUNCTION_INFO_V1(xicor_trans);
+
+Datum
+xicor_trans(PG_FUNCTION_ARGS)
+{
+    HeapTupleHeader problem;
+    bool n_isnull, x_isnull, y_isnull;
+    Datum n_datum, x_datum, y_datum;
+    int32 n;
+    float8 x_i, y_i;
+    ArrayType *x_arr, *y_arr, *new_x, *new_y;
+    Datum x_val, y_val;
+    TupleDesc tupdesc;
+    Datum values[3];
+    bool nulls[3] = {false, false, false};
+    HeapTuple result_tuple;
+
+    x_i = PG_GETARG_FLOAT8(1);
+    y_i = PG_GETARG_FLOAT8(2);
+
+    problem = PG_GETARG_HEAPTUPLEHEADER(0);
+
+    n_datum = GetAttributeByName(problem, "n", &n_isnull);
+    x_datum = GetAttributeByName(problem, "x", &x_isnull);
+    y_datum = GetAttributeByName(problem, "y", &y_isnull);
+
+    n = n_isnull ? 0 : DatumGetInt32(n_datum);
+
+    /* Append x_i to x array */
+    x_val = Float8GetDatum(x_i);
+    if (x_isnull || n == 0)
+    {
+        new_x = construct_array(&x_val, 1, FLOAT8OID,
+                                sizeof(float8), FLOAT8PASSBYVAL, TYPALIGN_DOUBLE);
+    }
+    else
+    {
+        int idx = n + 1;
+        x_arr = DatumGetArrayTypeP(x_datum);
+        new_x = array_set(x_arr, 1, &idx, x_val, false, -1,
+                          sizeof(float8), FLOAT8PASSBYVAL, TYPALIGN_DOUBLE);
+    }
+
+    /* Append y_i to y array */
+    y_val = Float8GetDatum(y_i);
+    if (y_isnull || n == 0)
+    {
+        new_y = construct_array(&y_val, 1, FLOAT8OID,
+                                sizeof(float8), FLOAT8PASSBYVAL, TYPALIGN_DOUBLE);
+    }
+    else
+    {
+        int idx = n + 1;
+        y_arr = DatumGetArrayTypeP(y_datum);
+        new_y = array_set(y_arr, 1, &idx, y_val, false, -1,
+                          sizeof(float8), FLOAT8PASSBYVAL, TYPALIGN_DOUBLE);
+    }
+
+    /* Build the return composite */
+    if (get_call_result_type(fcinfo, NULL, &tupdesc) != TYPEFUNC_COMPOSITE)
+        ereport(ERROR, (errmsg("return type must be a row type")));
+    tupdesc = BlessTupleDesc(tupdesc);
+
+    values[0] = Int32GetDatum(n + 1);
+    values[1] = PointerGetDatum(new_x);
+    values[2] = PointerGetDatum(new_y);
+
+    result_tuple = heap_form_tuple(tupdesc, values, nulls);
+    PG_RETURN_DATUM(HeapTupleGetDatum(result_tuple));
+}
+
+
 PG_FUNCTION_INFO_V1(xicor_final);
 
 Datum
 xicor_final(PG_FUNCTION_ARGS)
 {
-    HeapTupleHeader problem = PG_GETARG_HEAPTUPLEHEADER(0);
+    HeapTupleHeader problem;
     bool n_isnull, x_isnull, y_isnull;
-
-    Datum n = GetAttributeByName(problem, "n", &n_isnull);
-    Datum x = GetAttributeByName(problem, "x", &x_isnull);
-    Datum y = GetAttributeByName(problem, "y", &y_isnull);
-
+    Datum x, y;
     xicor_problem prob;
-    xicor_parameter param = {.seed = guc_seed, .ties = guc_ties};
-    build_xicor_problem(DatumGetArrayTypeP(x), x_isnull, DatumGetArrayTypeP(y), y_isnull, &prob);
+    xicor_parameter param;
+    xicor_score *score;
+    float8 result;
 
-    xicor_score* score = xicor_compute_score(&prob, &param);
-    float8 result = score->score;
+    problem = PG_GETARG_HEAPTUPLEHEADER(0);
+
+    GetAttributeByName(problem, "n", &n_isnull);
+    x = GetAttributeByName(problem, "x", &x_isnull);
+    y = GetAttributeByName(problem, "y", &y_isnull);
+
+    param.seed = guc_seed;
+    param.ties = guc_ties;
+
+    build_xicor_problem(DatumGetArrayTypeP(x), x_isnull,
+                        DatumGetArrayTypeP(y), y_isnull, &prob);
+
+    score = xicor_compute_score(&prob, &param);
+    result = score->score;
     free(score);
 
     PG_RETURN_FLOAT8(result);

@@ -6,7 +6,7 @@ PG_CONFIG ?= pg_config
 MODULE_big = $(EXTENSION)
 OBJS = src/pgxicor.o
 
-DATA = sql/xicor--0.1.0.sql
+DATA = sql/xicor--0.1.0.sql sql/xicor--0.1.1.sql sql/xicor--0.1.0--0.1.1.sql
 
 all: $(DATA)
 
