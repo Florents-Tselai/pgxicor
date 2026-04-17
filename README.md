@@ -11,6 +11,24 @@ You can use it as a more powerful alternative to standard `corr(X, Y)` which wor
 For more information on XI, see the original paper.
 [A New Coefficient of Correlation S. Chatterjee 2020](https://gwern.net/doc/statistics/order/2020-chatterjee.pdf)
 
+## Why xicor ?
+
+Standard Pearson correlation (`corr()`) only detects linear relationships. I
+f your data has a strong, but non-linear pattern (like a parabola), 
+`corr()` will fail to detect it, while `xicor()` will easily pick it up.
+
+```tsql
+CREATE TABLE non_linear (x float8, y float8);
+INSERT INTO non_linear (x, y)
+SELECT x, x * x FROM generate_series(-10, 10, 0.5) AS x;
+
+SELECT corr(x, y) AS pearson, xicor(x, y) AS xi FROM non_linear;
+       pearson        |         xi         
+----------------------+--------------------
+ 7.02754905861851e-18 | 0.9303882195448461
+(1 row)
+```
+
 ## Usage
 
 ```tsql
