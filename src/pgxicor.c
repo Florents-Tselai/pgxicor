@@ -1,5 +1,8 @@
 #include "pgxicor.h"
 #include "postgres.h"
+#include <limits.h>
+#include "catalog/pg_type.h"
+#include "access/htup_details.h"
 #include "fmgr.h"
 #include "utils/array.h"
 #include "utils/guc.h"
